@@ -5,8 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<groupId>be.algielen</groupId>
-	<artifactId>be.algielen.randompicture.RandomPicture</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<artifactId>RandomPicture</artifactId>
+	<version>1.1</version>
 	
 	<properties>
 		<maven.compiler.source>1.9</maven.compiler.source>
