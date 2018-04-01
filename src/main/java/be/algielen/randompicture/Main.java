@@ -36,6 +36,7 @@ public class Main extends Application {
 	private Stage primaryStage;
 	private ImageView imageView;
 	private ImageFetcher imageFetcher;
+	private Scene rootScene;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -44,9 +45,10 @@ public class Main extends Application {
 		primaryStage.setFullScreenExitKeyCombination(new KeyCodeCombination(KeyCode.ESCAPE));
 
 		loadProperties();
+		Image defaultImage = new Image(getResourcePath(this.defaultImage));
+		primaryStage.getIcons().add(defaultImage);
 
-		Image image = new Image(getResourcePath(defaultImage));
-		imageView = new ImageView(image);
+		imageView = new ImageView(defaultImage);
 		imageView.setPreserveRatio(true);
 		imageView.setSmooth(true);
 		imageView.setCache(true);
@@ -54,12 +56,12 @@ public class Main extends Application {
 		// TODO status bar ?
 		HBox hBox = new HBox(imageView);
 		hBox.setAlignment(Pos.CENTER);
-		Scene root = new Scene(hBox, 1280, 720);
-		root.setFill(Color.BLACK);
-		root.setOnMouseClicked(this::handleClick);
-		root.setOnKeyPressed(this::handleKeyPressed);
+		rootScene = new Scene(hBox, 1280, 720);
+		rootScene.setFill(Color.BLACK);
+		rootScene.setOnMouseClicked(this::handleClick);
+		rootScene.setOnKeyPressed(this::handleKeyPressed);
 
-		primaryStage.setScene(root);
+		primaryStage.setScene(rootScene);
 		primaryStage.show();
 
 		int size = 10;
@@ -136,6 +138,7 @@ public class Main extends Application {
 		alert.getButtonTypes().add(openInDefaultViewer);
 
 		Optional<ButtonType> result = alert.showAndWait();
+		forceBackgroundColor();
 		if (result.isPresent()) {
 			ButtonType pressed = result.get();
 			if (pressed == showInExplorer) {
@@ -145,6 +148,7 @@ public class Main extends Application {
 			}
 		}
 	}
+
 
 	private void openInExplorer(Path path) {
 		try {
@@ -192,5 +196,9 @@ public class Main extends Application {
 		alert.setHeaderText(null);
 		alert.setContentText(message);
 		alert.show();
+	}
+
+	private void forceBackgroundColor() {
+		rootScene.setFill(Color.BLACK);
 	}
 }
