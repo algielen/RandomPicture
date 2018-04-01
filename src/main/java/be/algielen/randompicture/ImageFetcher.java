@@ -27,6 +27,7 @@ class ImageFetcher extends Thread {
 		this.nextPicturesPaths = nextPicturesPaths;
 		this.size = size;
 		acceptedExtensions = createMatcher();
+		setName(ImageFetcher.class.getSimpleName());
 	}
 
 	private static PathMatcher createMatcher() {
