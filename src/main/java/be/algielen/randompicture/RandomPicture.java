@@ -1,36 +1,37 @@
 package be.algielen.randompicture;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 class RandomPicture {
 
 	private static Random random = new Random();
 
-	public static File getRandomFileIn(File f) {
-		if (f == null) {
-			return null;
-		} else if (f.isFile()) // || f.list().length == 0
-			return f;
-		else if (f.isDirectory()) {
+	// TODO non recursive
+	static Optional<Path> getRandomFileIn(Path path) {
+		if (path == null || !Files.exists(path)) {
+			return Optional.empty();
+		} else if (Files.isRegularFile(path)) {
+			return Optional.of(path);
+		} else if (Files.isDirectory(path)) {
 
-			Path toPath = f.toPath();
-			try (DirectoryStream<Path> paths = Files.newDirectoryStream(toPath)) {
-				List<Path> subDirectories = new ArrayList<>();
-				paths.forEach(subDirectories::add);
+			try (DirectoryStream<Path> paths = Files.newDirectoryStream(path)) {
+				List<Path> children = new ArrayList<>();
+				paths.forEach(children::add);
 
-				int size = subDirectories.size();
+				int size = children.size();
 				for (int counter = 0; counter < size; counter++) {
 					int randomIndex = random.nextInt(size);
-					Path chosenSubDirectory = subDirectories.get(randomIndex);
-					File rndSubFile = getRandomFileIn(chosenSubDirectory.toFile());
-					if (rndSubFile != null) {
+					Path chosenChild = children.get(randomIndex);
+					Optional<Path> rndSubFile = getRandomFileIn(chosenChild);
+
+					if (rndSubFile.isPresent()) {
 						return rndSubFile;
 					}
 				}
@@ -40,7 +41,7 @@ class RandomPicture {
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	//public static void main(String[] args) {

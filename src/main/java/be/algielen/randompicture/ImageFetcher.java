@@ -1,37 +1,55 @@
 package be.algielen.randompicture;
 
-import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
+import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import darrylbu.icon.StretchIcon;
+import javafx.scene.image.Image;
 
 class ImageFetcher extends Thread {
-	private Vector<StretchIcon> nextPictures;
-	private Vector<File> nextPicturesPathes;
-	private File filepath;
-	private final int SIZE = 10;
-	private static List<String> acceptedExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "tiff");
+	boolean running = true;
+	private final ConcurrentLinkedQueue<Image> nextPictures;
+	private final ConcurrentLinkedQueue<Path> nextPicturesPaths;
+	private Path filepath;
+	private final int size;
+	private final PathMatcher acceptedExtensions;
 
-	ImageFetcher(Vector<StretchIcon> nextPictures, File filepath,
-				 Vector<File> nextPicturesPathes) {
+	ImageFetcher(ConcurrentLinkedQueue<Image> nextPictures, Path filepath,
+				 ConcurrentLinkedQueue<Path> nextPicturesPaths, int size) {
 		this.nextPictures = nextPictures;
 		this.filepath = filepath;
-		this.nextPicturesPathes = nextPicturesPathes;
+		this.nextPicturesPaths = nextPicturesPaths;
+		this.size = size;
+		acceptedExtensions = createMatcher();
 	}
 
+	private static PathMatcher createMatcher() {
+		List<String> acceptedExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "tiff");
+		StringJoiner stringJoiner = new StringJoiner(",", "{", "}");
+		for (String acceptedExtension : acceptedExtensions) {
+			stringJoiner.add(acceptedExtension);
+		}
+		String pattern = stringJoiner.toString();
+		return FileSystems.getDefault().getPathMatcher("glob:*." + pattern);
+	}
+
+	@Override
 	public void run() {
-		while (true) {
+		while (running) {
 			int i = 0;
-			while (nextPictures.size() < SIZE) {
+			while (nextPictures.size() < size) {
 				fetchImage();
 				i++;
 			}
-			System.out.println("Fetched " + i + " pictures.");
 			try {
 				synchronized (nextPictures) {
-					nextPictures.wait();
+					nextPictures.wait(1000);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -39,25 +57,37 @@ class ImageFetcher extends Thread {
 		}
 	}
 
+	void finish() {
+		running = false;
+	}
+
 	private void fetchImage() {
-		String ext = "";
-		File picture;
+		Path picture = null;
 		do {
 			try {
-				picture = RandomPicture.getRandomFileIn(filepath);
-			} catch (Exception e) {
-				picture = null;
+				Optional<Path> optional = RandomPicture.getRandomFileIn(filepath);
+				if (optional.isPresent()) {
+					picture = optional.get();
+				}
+			} catch (Exception e) { // TODO check if necessary
 				e.printStackTrace();
 			}
 			if (picture != null) {
-				System.out.println(String.format("Attempting to load %s",
-						picture.getPath()));
-				ext = Utils.getExt(picture);
-				// System.out.println(ext);
+				System.out.println("Attempting to load : " + picture);
 			}
-		} while (picture == null || !acceptedExtensions.contains(ext));
-		StretchIcon myPicture = new StretchIcon(picture.getPath());
-		nextPictures.add(myPicture);
-		nextPicturesPathes.addElement(picture);
+		} while (!isAPicture(picture));
+		String uri = picture.toUri().toString();
+		Image image = new Image(uri);
+		nextPictures.offer(image);
+		nextPicturesPaths.offer(picture);
+	}
+
+	private boolean isAPicture(Path picture) {
+		if (picture == null) {
+			return false;
+		} else if (Files.isDirectory(picture)) {
+			return false;
+		}
+		return acceptedExtensions.matches(picture.getFileName());
 	}
 }

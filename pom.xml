@@ -40,8 +40,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<!--<classpathPrefix>lib/</classpathPrefix> -->
-							<mainClass>be.algielen.randompicture.ImagePanel</mainClass>
+							<mainClass>be.algielen.randompicture.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
