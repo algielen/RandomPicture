@@ -2,8 +2,11 @@ package be.algielen.randompicture;
 
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -27,6 +30,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+
+	private static final String PROPERTIES_FILE = "randompicture.properties";
 
 	private Path filepath;
 	private String defaultImage;
@@ -77,9 +82,30 @@ public class Main extends Application {
 
 	private void loadProperties() {
 		Properties props = new Properties();
+
+		Path pathInSameDir = Paths.get(PROPERTIES_FILE);
+		File propsInCurrentDir = pathInSameDir.toFile();
+
+		if (propsInCurrentDir.exists() && propsInCurrentDir.canRead()) {
+			try (Reader propertiesReader = Files.newBufferedReader(pathInSameDir)) {
+				props.load(propertiesReader);
+
+				filepath = Paths.get(props.getProperty("path"));
+				defaultImage = props.getProperty("defaultImage");
+
+				return;
+
+			} catch (IOException e) {
+				System.err.println("Couldn't read external properties, reverting to default settings");
+				props.clear();
+			}
+		}
+
+
 		try (InputStream input = Main.class
 				.getResourceAsStream(getResourcePath("props.properties"))) {
 			props.load(input);
+
 			filepath = Paths.get(props.getProperty("path"));
 			defaultImage = props.getProperty("defaultImage");
 
