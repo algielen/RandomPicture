@@ -4,10 +4,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javafx.scene.image.Image;
@@ -26,18 +23,8 @@ class ImageFetcher extends Thread {
 		this.filepath = filepath;
 		this.nextPicturesPaths = nextPicturesPaths;
 		this.size = size;
-		acceptedExtensions = createMatcher();
+		acceptedExtensions = FileSystems.getDefault().getPathMatcher("glob:*." + "{jpg,jpeg,png,gif,bmp,tiff,avi}");
 		setName(ImageFetcher.class.getSimpleName());
-	}
-
-	private static PathMatcher createMatcher() {
-		List<String> acceptedExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "tiff");
-		StringJoiner stringJoiner = new StringJoiner(",", "{", "}");
-		for (String acceptedExtension : acceptedExtensions) {
-			stringJoiner.add(acceptedExtension);
-		}
-		String pattern = stringJoiner.toString();
-		return FileSystems.getDefault().getPathMatcher("glob:*." + pattern);
 	}
 
 	@Override
@@ -48,6 +35,7 @@ class ImageFetcher extends Thread {
 				fetchImage();
 				i++;
 			}
+			System.out.println("fetched " + i + " pictures");
 			try {
 				synchronized (nextPictures) {
 					nextPictures.wait(1000);
