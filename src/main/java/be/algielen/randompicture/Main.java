@@ -9,9 +9,13 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
@@ -33,14 +37,15 @@ public class Main extends Application {
 
 	private static final String PROPERTIES_FILE = "randompicture.properties";
 
-	private Path filepath;
+	private List<Path> filepaths;
+	private Path currentPath;
 	private String defaultImage;
 	private final ConcurrentLinkedQueue<Image> nextPictures = new ConcurrentLinkedQueue<>();
 	private final ConcurrentLinkedQueue<Path> nextPicturesPaths = new ConcurrentLinkedQueue<>();
 
 	private Stage primaryStage;
 	private ImageView imageView;
-	private ImageFetcher imageFetcher;
+	private ImageLoader imageLoader;
 	private Scene rootScene;
 
 	@Override
@@ -70,14 +75,14 @@ public class Main extends Application {
 		primaryStage.show();
 
 		int size = 10;
-		imageFetcher = new ImageFetcher(nextPictures, filepath, nextPicturesPaths, size);
-		imageFetcher.start();
+		imageLoader = new ImageLoader(nextPictures, filepaths, nextPicturesPaths, size);
+		imageLoader.start();
 	}
 
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		imageFetcher.finish();
+		imageLoader.finish();
 	}
 
 	private void loadProperties() {
@@ -86,11 +91,16 @@ public class Main extends Application {
 		Path pathInSameDir = Paths.get(PROPERTIES_FILE);
 		File propsInCurrentDir = pathInSameDir.toFile();
 
+
 		if (propsInCurrentDir.exists() && propsInCurrentDir.canRead()) {
 			try (Reader propertiesReader = Files.newBufferedReader(pathInSameDir)) {
 				props.load(propertiesReader);
 
-				filepath = Paths.get(props.getProperty("path"));
+				String[] paths = props.getProperty("paths").split(";");
+
+				filepaths = Arrays.stream(paths)
+						.map(string -> Paths.get(string))
+						.collect(Collectors.toList());
 				defaultImage = props.getProperty("defaultImage");
 
 				return;
@@ -100,13 +110,17 @@ public class Main extends Application {
 				props.clear();
 			}
 		}
+		if (filepaths == null || filepaths.isEmpty()) {
+			loadBackupProperties(props);
+		}
+	}
 
-
+	private void loadBackupProperties(Properties props) {
 		try (InputStream input = Main.class
 				.getResourceAsStream(getResourcePath("props.properties"))) {
 			props.load(input);
 
-			filepath = Paths.get(props.getProperty("path"));
+			filepaths = Collections.singletonList(Paths.get(props.getProperty("path")));
 			defaultImage = props.getProperty("defaultImage");
 
 		} catch (Exception exception) {
@@ -146,13 +160,13 @@ public class Main extends Application {
 			} else {
 				imageView.fitWidthProperty().bind(primaryStage.widthProperty());
 			}
-			filepath = nextPicturesPaths.poll();
+			currentPath = nextPicturesPaths.poll();
 			nextPictures.notifyAll();
 		}
 	}
 
 	private void showInfo() {
-		TextField textField = new TextField(filepath.toString());
+		TextField textField = new TextField(currentPath.toString());
 		textField.setEditable(false);
 
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -168,9 +182,9 @@ public class Main extends Application {
 		if (result.isPresent()) {
 			ButtonType pressed = result.get();
 			if (pressed == showInExplorer) {
-				openInExplorer(filepath);
+				openInExplorer(currentPath);
 			} else if (pressed == openInDefaultViewer) {
-				openInDefaultViewer(filepath);
+				openInDefaultViewer(currentPath);
 			}
 		}
 	}

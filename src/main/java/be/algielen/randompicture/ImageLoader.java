@@ -4,31 +4,34 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javafx.scene.image.Image;
 
-class ImageFetcher extends Thread {
+class ImageLoader extends Thread {
 	boolean running = true;
 	private final ConcurrentLinkedQueue<Image> nextPictures;
 	private final ConcurrentLinkedQueue<Path> nextPicturesPaths;
-	private Path filepath;
+	private List<Path> filepaths;
 	private final int size;
 	private final PathMatcher acceptedExtensions;
+	private RandomSelector randomSelector;
 
-	ImageFetcher(ConcurrentLinkedQueue<Image> nextPictures, Path filepath,
-				 ConcurrentLinkedQueue<Path> nextPicturesPaths, int size) {
+	ImageLoader(ConcurrentLinkedQueue<Image> nextPictures, List<Path> filepaths,
+				ConcurrentLinkedQueue<Path> nextPicturesPaths, int size) {
 		this.nextPictures = nextPictures;
-		this.filepath = filepath;
+		this.filepaths = filepaths;
 		this.nextPicturesPaths = nextPicturesPaths;
 		this.size = size;
-		acceptedExtensions = FileSystems.getDefault().getPathMatcher("glob:*." + "{jpg,jpeg,png,gif,bmp,tiff,avi}");
-		setName(ImageFetcher.class.getSimpleName());
+		this.acceptedExtensions = FileSystems.getDefault().getPathMatcher("glob:*." + "{jpg,jpeg,png,gif,bmp,tiff,avi}");
+		setName(ImageLoader.class.getSimpleName());
 	}
 
 	@Override
 	public void run() {
+		this.randomSelector = new RandomSelector();
 		while (running) {
 			int i = 0;
 			while (nextPictures.size() < size) {
@@ -54,7 +57,7 @@ class ImageFetcher extends Thread {
 		Path picture = null;
 		do {
 			try {
-				Optional<Path> optional = RandomPicture.getRandomFileIn(filepath);
+				Optional<Path> optional = randomSelector.getRandomFileIn(filepaths);
 				if (optional.isPresent()) {
 					picture = optional.get();
 				}

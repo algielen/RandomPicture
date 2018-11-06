@@ -7,14 +7,18 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
-class RandomPicture {
+class RandomSelector {
 
-	private static Random random = new Random();
+	private ThreadLocalRandom random = ThreadLocalRandom.current();
+
+	Optional<Path> getRandomFileIn(List<Path> paths) {
+		return getRandomFileIn(randomChoice(paths));
+	}
 
 	// TODO non recursive
-	static Optional<Path> getRandomFileIn(Path path) {
+	Optional<Path> getRandomFileIn(Path path) {
 		if (path == null || !Files.exists(path)) {
 			return Optional.empty();
 		} else if (Files.isRegularFile(path)) {
@@ -25,14 +29,15 @@ class RandomPicture {
 				List<Path> children = new ArrayList<>();
 				paths.forEach(children::add);
 
-				int size = children.size();
-				for (int counter = 0; counter < size; counter++) {
-					int randomIndex = random.nextInt(size);
-					Path chosenChild = children.get(randomIndex);
+				// randomly choosing elements until one is valid or there are none left
+				while (!children.isEmpty()) {
+					Path chosenChild = randomChoice(children);
 					Optional<Path> rndSubFile = getRandomFileIn(chosenChild);
 
 					if (rndSubFile.isPresent()) {
 						return rndSubFile;
+					} else {
+						children.remove(chosenChild);
 					}
 				}
 
@@ -42,6 +47,13 @@ class RandomPicture {
 		}
 
 		return Optional.empty();
+	}
+
+
+	private <ELEMENT> ELEMENT randomChoice(List<ELEMENT> list) {
+		int size = list.size();
+		int index = random.nextInt(size);
+		return list.get(index);
 	}
 
 	//public static void main(String[] args) {
