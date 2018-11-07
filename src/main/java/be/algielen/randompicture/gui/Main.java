@@ -1,4 +1,4 @@
-package be.algielen.randompicture;
+package be.algielen.randompicture.gui;
 
 
 import java.awt.Desktop;
@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import be.algielen.randompicture.logic.ImageLoader;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -68,8 +69,6 @@ public class Main extends Application {
 		imageView.setSmooth(true);
 		imageView.setCache(true);
 
-		// TODO status bar ?
-
 		imageBox = new HBox(imageView);
 		imageBox.setAlignment(Pos.CENTER);
 
@@ -78,10 +77,7 @@ public class Main extends Application {
 		AnchorPane mainBorderPane = new AnchorPane(imageBox);
 		mainBorderPane.getChildren().add(statusBar);
 
-		AnchorPane.setTopAnchor(mainBorderPane, 0.0);
-		AnchorPane.setBottomAnchor(mainBorderPane, 0.0);
-		AnchorPane.setLeftAnchor(mainBorderPane, 0.0);
-		AnchorPane.setRightAnchor(mainBorderPane, 0.0);
+		fillParentCompletely(mainBorderPane);
 
 		AnchorPane.setTopAnchor(imageBox, 0.0);
 		AnchorPane.setLeftAnchor(imageBox, 0.0);
@@ -104,10 +100,16 @@ public class Main extends Application {
 		imageLoader.start();
 	}
 
+	private void fillParentCompletely(AnchorPane mainBorderPane) {
+		AnchorPane.setTopAnchor(mainBorderPane, 0.0);
+		AnchorPane.setBottomAnchor(mainBorderPane, 0.0);
+		AnchorPane.setLeftAnchor(mainBorderPane, 0.0);
+		AnchorPane.setRightAnchor(mainBorderPane, 0.0);
+	}
+
 	private HBox createStatusBar() {
 		statusText = new Label("Started");
 		statusText.setTextFill(Color.ANTIQUEWHITE);
-
 
 		Button showInExplorer = new Button("Open folder");
 		showInExplorer.setOnAction(event -> openInExplorer(currentPath));
@@ -207,6 +209,7 @@ public class Main extends Application {
 			}
 			currentPath = nextPicturesPaths.poll();
 			nextPictures.notifyAll();
+			showInfo();
 		}
 	}
 
@@ -262,9 +265,5 @@ public class Main extends Application {
 
 	private void setStatusMessage(String message) {
 		updateStatus(message);
-	}
-
-	private void forceBackgroundColor() {
-		rootScene.setFill(Color.BLACK);
 	}
 }

@@ -1,4 +1,4 @@
-package be.algielen.randompicture;
+package be.algielen.randompicture.logic;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javafx.scene.image.Image;
 
-class ImageLoader extends Thread {
-	boolean running = true;
+public class ImageLoader extends Thread {
+	private boolean running = true;
 	private final ConcurrentLinkedQueue<Image> nextPictures;
 	private final ConcurrentLinkedQueue<Path> nextPicturesPaths;
 	private List<Path> filepaths;
@@ -19,8 +19,8 @@ class ImageLoader extends Thread {
 	private final PathMatcher acceptedExtensions;
 	private RandomSelector randomSelector;
 
-	ImageLoader(ConcurrentLinkedQueue<Image> nextPictures, List<Path> filepaths,
-				ConcurrentLinkedQueue<Path> nextPicturesPaths, int size) {
+	public ImageLoader(ConcurrentLinkedQueue<Image> nextPictures, List<Path> filepaths,
+					   ConcurrentLinkedQueue<Path> nextPicturesPaths, int size) {
 		this.nextPictures = nextPictures;
 		this.filepaths = filepaths;
 		this.nextPicturesPaths = nextPicturesPaths;
@@ -49,7 +49,7 @@ class ImageLoader extends Thread {
 		}
 	}
 
-	void finish() {
+	public void finish() {
 		running = false;
 	}
 

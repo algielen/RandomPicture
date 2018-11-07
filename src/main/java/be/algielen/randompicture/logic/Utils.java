@@ -1,4 +1,4 @@
-package be.algielen.randompicture;
+package be.algielen.randompicture.logic;
 
 import java.io.File;
 import java.nio.file.Files;
