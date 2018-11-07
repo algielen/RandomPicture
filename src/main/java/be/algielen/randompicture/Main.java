@@ -12,23 +12,26 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -47,6 +50,8 @@ public class Main extends Application {
 	private ImageView imageView;
 	private ImageLoader imageLoader;
 	private Scene rootScene;
+	private Label statusText;
+	private HBox imageBox;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -64,9 +69,29 @@ public class Main extends Application {
 		imageView.setCache(true);
 
 		// TODO status bar ?
-		HBox hBox = new HBox(imageView);
-		hBox.setAlignment(Pos.CENTER);
-		rootScene = new Scene(hBox, 1280, 720);
+
+		imageBox = new HBox(imageView);
+		imageBox.setAlignment(Pos.CENTER);
+
+		HBox statusBar = createStatusBar();
+
+		AnchorPane mainBorderPane = new AnchorPane(imageBox);
+		mainBorderPane.getChildren().add(statusBar);
+
+		AnchorPane.setTopAnchor(mainBorderPane, 0.0);
+		AnchorPane.setBottomAnchor(mainBorderPane, 0.0);
+		AnchorPane.setLeftAnchor(mainBorderPane, 0.0);
+		AnchorPane.setRightAnchor(mainBorderPane, 0.0);
+
+		AnchorPane.setTopAnchor(imageBox, 0.0);
+		AnchorPane.setLeftAnchor(imageBox, 0.0);
+		AnchorPane.setRightAnchor(imageBox, 0.0);
+		AnchorPane.setBottomAnchor(imageBox, 10.0);
+
+		AnchorPane.setBottomAnchor(statusBar, 0.0);
+		AnchorPane.setRightAnchor(statusBar, 0.0);
+
+		rootScene = new Scene(mainBorderPane, 1280, 720);
 		rootScene.setFill(Color.BLACK);
 		rootScene.setOnMouseClicked(this::handleClick);
 		rootScene.setOnKeyPressed(this::handleKeyPressed);
@@ -77,6 +102,25 @@ public class Main extends Application {
 		int size = 10;
 		imageLoader = new ImageLoader(nextPictures, filepaths, nextPicturesPaths, size);
 		imageLoader.start();
+	}
+
+	private HBox createStatusBar() {
+		statusText = new Label("Started");
+		statusText.setTextFill(Color.ANTIQUEWHITE);
+
+
+		Button showInExplorer = new Button("Open folder");
+		showInExplorer.setOnAction(event -> openInExplorer(currentPath));
+
+		Button openInDefaultViewer = new Button("Open file");
+		openInDefaultViewer.setOnAction(event -> openInDefaultViewer(currentPath));
+
+		HBox statusBar = new HBox(statusText, showInExplorer, openInDefaultViewer);
+		statusBar.setAlignment(Pos.CENTER_RIGHT);
+		statusBar.setSpacing(10.0);
+		statusBar.setBackground(new Background(new BackgroundFill(Color.grayRgb(120, 0.80), CornerRadii.EMPTY, Insets.EMPTY)));
+
+		return statusBar;
 	}
 
 	@Override
@@ -155,10 +199,11 @@ public class Main extends Application {
 			}
 			Image newImage = nextPictures.poll();
 			imageView.setImage(newImage);
+
 			if (newImage.getHeight() > newImage.getWidth()) {
-				imageView.fitHeightProperty().bind(primaryStage.heightProperty());
+				imageView.fitHeightProperty().bind(imageBox.heightProperty());
 			} else {
-				imageView.fitWidthProperty().bind(primaryStage.widthProperty());
+				imageView.fitWidthProperty().bind(imageBox.widthProperty());
 			}
 			currentPath = nextPicturesPaths.poll();
 			nextPictures.notifyAll();
@@ -166,27 +211,11 @@ public class Main extends Application {
 	}
 
 	private void showInfo() {
-		TextField textField = new TextField(currentPath.toString());
-		textField.setEditable(false);
+		updateStatus(currentPath.toString());
+	}
 
-		Alert alert = new Alert(Alert.AlertType.INFORMATION);
-		alert.setHeaderText(null);
-		alert.getDialogPane().setContent(textField);
-		ButtonType showInExplorer = new ButtonType("Open folder");
-		alert.getButtonTypes().add(showInExplorer);
-		ButtonType openInDefaultViewer = new ButtonType("Open file");
-		alert.getButtonTypes().add(openInDefaultViewer);
-
-		Optional<ButtonType> result = alert.showAndWait();
-		forceBackgroundColor();
-		if (result.isPresent()) {
-			ButtonType pressed = result.get();
-			if (pressed == showInExplorer) {
-				openInExplorer(currentPath);
-			} else if (pressed == openInDefaultViewer) {
-				openInDefaultViewer(currentPath);
-			}
-		}
+	private void updateStatus(String text) {
+		statusText.setText(text);
 	}
 
 
@@ -232,10 +261,7 @@ public class Main extends Application {
 	}
 
 	private void setStatusMessage(String message) {
-		Alert alert = new Alert(Alert.AlertType.INFORMATION);
-		alert.setHeaderText(null);
-		alert.setContentText(message);
-		alert.show();
+		updateStatus(message);
 	}
 
 	private void forceBackgroundColor() {
