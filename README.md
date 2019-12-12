@@ -4,7 +4,7 @@ A simple Java app that shows a random picture from a directory tree.
 Run mvn package to create a JAR in target/shade/  
 Create `props.properties` file with the following properties
 ```
-path=YOUR_PATH_HERE
+paths=YOUR_PATH_HERE;ANOTHER_ONE
 defaultImage=heavybreathing.gif
 ```
 and place it alongside the generated JAR.

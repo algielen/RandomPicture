@@ -4,8 +4,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javafx.scene.image.Image;
@@ -14,6 +16,7 @@ public class ImageLoader extends Thread {
 	private boolean running = true;
 	private final ConcurrentLinkedQueue<Image> nextPictures;
 	private final ConcurrentLinkedQueue<Path> nextPicturesPaths;
+	private Set<Path> excluded;
 	private List<Path> filepaths;
 	private final int size;
 	private final PathMatcher acceptedExtensions;
@@ -24,6 +27,7 @@ public class ImageLoader extends Thread {
 		this.nextPictures = nextPictures;
 		this.filepaths = filepaths;
 		this.nextPicturesPaths = nextPicturesPaths;
+		this.excluded = new HashSet<>();
 		this.size = size;
 		this.acceptedExtensions = FileSystems.getDefault().getPathMatcher("glob:*." + "{jpg,jpeg,png,gif,bmp,tiff,avi}");
 		setName(ImageLoader.class.getSimpleName());
@@ -34,7 +38,7 @@ public class ImageLoader extends Thread {
 		this.randomSelector = new RandomSelector();
 		while (running) {
 			int i = 0;
-			while (nextPictures.size() < size) {
+			while (nextPictures.size() < size && running) {
 				fetchImage();
 				i++;
 			}
@@ -55,23 +59,35 @@ public class ImageLoader extends Thread {
 
 	private void fetchImage() {
 		Path picture = null;
-		do {
+		while (picture == null && running) {
 			try {
 				Optional<Path> optional = randomSelector.getRandomFileIn(filepaths);
+
 				if (optional.isPresent()) {
-					picture = optional.get();
+					Path newFile = optional.get();
+
+					if (!excluded.contains(newFile)) {
+						if (isAPicture(newFile)) {
+							picture = newFile;
+						} else {
+							excluded.add(newFile);
+							System.out.println("Excluded " + newFile);
+						}
+					}
 				}
-			} catch (Exception e) { // TODO check if necessary
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			if (picture != null) {
-				System.out.println("Attempting to load : " + picture);
-			}
-		} while (!isAPicture(picture));
-		String uri = picture.toUri().toString();
-		Image image = new Image(uri);
-		nextPictures.offer(image);
-		nextPicturesPaths.offer(picture);
+
+		}
+		if (picture != null) {
+			System.out.println("Attempting to load : " + picture);
+
+			String uri = picture.toUri().toString();
+			Image image = new Image(uri);
+			nextPictures.offer(image);
+			nextPicturesPaths.offer(picture);
+		}
 	}
 
 	private boolean isAPicture(Path picture) {
