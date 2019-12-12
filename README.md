@@ -1,13 +1,14 @@
 # RandomPicture
 A simple Java app that shows a random picture from a directory tree.
 # How to make
-Add a `props.properties` file with the following properties
+Run mvn package to create a JAR in target/shade/  
+Create `props.properties` file with the following properties
 ```
 path=YOUR_PATH_HERE
 defaultImage=heavybreathing.gif
 ```
+and place it alongside the generated JAR.
 
-and run mvn package.
 
 # How to run
 Launch the previously generated jar with `java -jar JAR_NAME`
