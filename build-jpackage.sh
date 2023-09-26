@@ -3,6 +3,7 @@ jpackage \
 --input C:/development/sources/RandomPicture/target/shade \
 --dest C:/development/sources/RandomPicture/target/exe \
 --name RandomPicture-1-4 \
+--icon C:/development/sources/RandomPicture/src/main/resources/heavybreathing.ico
 --main-jar RandomPicture-shaded-1.4.jar \
 --main-class be.algielen.randompicture.gui.Main \
 --module-path C:/development/resources/javafx-jmods-15.0.1/ \
