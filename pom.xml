@@ -19,6 +19,7 @@
 		<mainClass>be.algielen.randompicture.gui.Main</mainClass>
 		<javafx.version>25.0.2</javafx.version>
 		<javafx.platform>win</javafx.platform>
+		<javafx.jmods.path>C:/development/resources/javafx-jmods-25.0.2</javafx.jmods.path>
 	</properties>
 
 	<profiles>
@@ -43,6 +44,112 @@
 			<properties>
 				<javafx.platform>mac</javafx.platform>
 			</properties>
+		</profile>
+
+		<profile>
+			<id>jlink</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<version>3.8.1</version>
+						<executions>
+							<execution>
+								<id>copy-runtime-deps</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>copy-dependencies</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.directory}/deps</outputDirectory>
+									<includeScope>runtime</includeScope>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>do-jlink</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>jlink</executable>
+									<arguments>
+										<argument>--output</argument>
+										<argument>${project.build.directory}/jlink/${project.artifactId}</argument>
+										<argument>--module-path</argument>
+										<argument>
+											${project.build.directory}/${project.artifactId}-${project.version}.jar${path.separator}${project.build.directory}/deps${path.separator}${javafx.jmods.path}
+										</argument>
+										<argument>--add-modules</argument>
+										<argument>
+											randompicture,javafx.controls,javafx.graphics,javafx.media,javafx.web,javafx.fxml,java.logging,java.base,java.desktop,java.xml,jdk.jfr,jdk.unsupported
+										</argument>
+										<argument>--launcher</argument>
+										<argument>randompicture=randompicture/be.algielen.randompicture.gui.MainFX
+										</argument>
+										<argument>--strip-debug</argument>
+										<argument>--no-man-pages</argument>
+										<argument>--no-header-files</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>jpackage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>do-jpackage</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>jpackage</executable>
+									<arguments>
+										<argument>--type</argument>
+										<argument>app-image</argument>
+										<argument>--input</argument>
+										<argument>${project.build.directory}/shade</argument>
+										<argument>--dest</argument>
+										<argument>${project.build.directory}/exe</argument>
+										<argument>--name</argument>
+										<argument>${project.artifactId}-${project.version}</argument>
+										<argument>--main-jar</argument>
+										<argument>${project.artifactId}-shaded-${project.version}.jar</argument>
+										<argument>--main-class</argument>
+										<argument>${mainClass}</argument>
+										<argument>--module-path</argument>
+										<argument>${javafx.jmods.path}</argument>
+										<argument>--add-modules</argument>
+										<argument>
+											java.base,javafx.controls,javafx.web,javafx.graphics,javafx.media,java.datatransfer,java.desktop,java.scripting,java.xml,jdk.jsobject,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom,javafx.fxml,java.naming,java.sql,jdk.charsets
+										</argument>
+										<argument>--icon</argument>
+										<argument>${project.basedir}/src/main/resources/heavybreathing.ico</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 	
