@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>be.algielen</groupId>
   <artifactId>RandomPicture</artifactId>
-  <version>1.5</version>
+  <version>1.6</version>
   <build>
     <plugins>
       <plugin>
@@ -19,15 +19,14 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.14.0</version>
         <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.source}</target>
+          <release>25</release>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.2</version>
         <configuration>
           <archive>
             <manifest>
@@ -39,7 +38,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.6.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -69,7 +68,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.5.3</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -88,11 +87,25 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>linux</id>
+      <properties>
+        <javafx.platform>linux</javafx.platform>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac</id>
+      <properties>
+        <javafx.platform>mac</javafx.platform>
+      </properties>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.10.0</version>
+      <version>5.11.4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -111,11 +124,13 @@
     </dependency>
   </dependencies>
   <properties>
-    <mainClass>be.algielen.randompicture.gui.Main</mainClass>
-    <maven.compiler.source>21</maven.compiler.source>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <javafx.platform>win</javafx.platform>
     <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
+    <mainClass>be.algielen.randompicture.gui.Main</mainClass>
+    <java.version>25</java.version>
+    <maven.compiler.source>25</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <javafx.version>21</javafx.version>
+    <javafx.version>25.0.2</javafx.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 </project>

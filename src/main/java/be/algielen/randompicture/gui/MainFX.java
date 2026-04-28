@@ -1,7 +1,26 @@
 package be.algielen.randompicture.gui;
 
 
-import java.awt.Desktop;
+import be.algielen.randompicture.logic.ImageLoader;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,29 +35,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-import be.algielen.randompicture.logic.ImageLoader;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-
 public class MainFX extends Application {
-
+    private Logger logger = LoggerFactory.getLogger(MainFX.class);
 	private static final String PROPERTIES_FILE = "randompicture.properties";
 
 	private List<Path> filepaths;
@@ -156,7 +154,7 @@ public class MainFX extends Application {
 				return;
 
 			} catch (IOException e) {
-				System.err.println("Couldn't read external properties, reverting to default settings");
+                logger.error("Couldn't read external properties, reverting to default settings");
 				props.clear();
 			}
 		}

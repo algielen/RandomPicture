@@ -1,5 +1,9 @@
 package be.algielen.randompicture.logic;
 
+import javafx.scene.image.Image;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,9 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javafx.scene.image.Image;
-
 public class ImageLoader extends Thread {
+    private Logger logger = LoggerFactory.getLogger(ImageLoader.class);
 	private boolean running = true;
 	private final ConcurrentLinkedQueue<Image> nextPictures;
 	private final ConcurrentLinkedQueue<Path> nextPicturesPaths;
@@ -42,13 +45,13 @@ public class ImageLoader extends Thread {
 				fetchImage();
 				i++;
 			}
-			System.out.println("fetched " + i + " pictures");
+            logger.debug("fetched " + i + " pictures");
 			try {
 				synchronized (nextPictures) {
 					nextPictures.wait(1000);
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+                logger.error("Error in run ", e);
 			}
 		}
 	}
@@ -71,17 +74,17 @@ public class ImageLoader extends Thread {
 							picture = newFile;
 						} else {
 							excluded.add(newFile);
-							System.out.println("Excluded " + newFile);
+                            logger.info("Excluded " + newFile);
 						}
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+                logger.error("Error in fetchImage ", e);
 			}
 
 		}
 		if (picture != null) {
-			System.out.println("Attempting to load : " + picture);
+            logger.debug("Attempting to load : " + picture);
 
 			String uri = picture.toUri().toString();
 			Image image = new Image(uri);

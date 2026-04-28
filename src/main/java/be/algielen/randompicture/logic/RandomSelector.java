@@ -1,5 +1,8 @@
 package be.algielen.randompicture.logic;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -10,6 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 class RandomSelector {
+    private Logger logger = LoggerFactory.getLogger(RandomSelector.class);
 
 	private ThreadLocalRandom random = ThreadLocalRandom.current();
 
@@ -42,7 +46,7 @@ class RandomSelector {
 				}
 
 			} catch (IOException ex) {
-				ex.printStackTrace();
+                logger.error("Error in getRandomFileIn ", ex);
 			}
 		}
 
