@@ -30,13 +30,13 @@ mvn package
 
 Produces two artifacts:
 
-- `target/RandomPicture-1.6.jar` — modular JAR (for jlink)
-- `target/shade/RandomPicture-shaded-1.6.jar` — fat JAR (for direct execution)
+- `target/RandomPicture-1.6.1.jar` — modular JAR (for jlink)
+- `target/shade/RandomPicture-shaded-1.6.1.jar` — fat JAR (for direct execution)
 
 ## Run
 
 ```bash
-java -jar target/shade/RandomPicture-shaded-1.6.jar
+java -jar target/shade/RandomPicture-shaded-1.6.1.jar
 ```
 
 Or during development:
@@ -105,3 +105,7 @@ The same `-Djavafx.jmods.path` override applies.
 | F11                        | Toggle fullscreen                  |
 | Status bar → "Open folder" | Open containing folder in Explorer |
 | Status bar → "Open file"   | Open image in default viewer       |
+
+### Certificate trust in runtime bundles
+
+The jlink and jpackage profiles append the 16 compromised eMudhra certificate fingerprints to the generated runtime's blocklist (CVE-2026-91403), preserving existing vendor entries. Packaging fails if the blocklist is missing or incompatible. The build JDK and existing installations still require an update or the mitigation in the [OpenJDK advisory](https://openjdk.org/groups/vulnerability/advisories/2026-10-21). Rebuild and redistribute bundles to update installed copies.

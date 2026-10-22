@@ -7,7 +7,7 @@
 	<groupId>be.algielen</groupId>
 	<artifactId>RandomPicture</artifactId>
 	<packaging>jar</packaging>
-	<version>1.6</version>
+	<version>1.6.1</version>
 	
 	
 	<properties>
@@ -80,23 +80,33 @@
 								</goals>
 								<configuration>
 									<executable>jlink</executable>
+									<longModulepath>false</longModulepath>
 									<arguments>
 										<argument>--output</argument>
 										<argument>${project.build.directory}/jlink/${project.artifactId}</argument>
 										<argument>--module-path</argument>
-										<argument>
-											${project.build.directory}/${project.artifactId}-${project.version}.jar${path.separator}${project.build.directory}/deps${path.separator}${javafx.jmods.path}
-										</argument>
+										<argument>${project.build.directory}/${project.artifactId}-${project.version}.jar${path.separator}${project.build.directory}/deps${path.separator}${javafx.jmods.path}</argument>
 										<argument>--add-modules</argument>
-										<argument>
-											randompicture,javafx.controls,javafx.graphics,javafx.media,javafx.web,javafx.fxml,java.logging,java.base,java.desktop,java.xml,jdk.jfr,jdk.unsupported
-										</argument>
+										<argument>randompicture,javafx.controls,javafx.graphics,javafx.media,javafx.web,javafx.fxml,java.logging,java.base,java.desktop,java.xml,jdk.jfr,jdk.unsupported</argument>
 										<argument>--launcher</argument>
 										<argument>randompicture=randompicture/be.algielen.randompicture.gui.MainFX
 										</argument>
 										<argument>--strip-debug</argument>
 										<argument>--no-man-pages</argument>
 										<argument>--no-header-files</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>secure-generated-runtime</id>
+								<phase>verify</phase>
+								<goals><goal>exec</goal></goals>
+								<configuration>
+									<executable>${java.home}/bin/java</executable>
+									<arguments>
+										<argument>${project.basedir}/scripts/PatchRuntimeTrust.java</argument>
+										<argument>${project.build.directory}/jlink/${project.artifactId}</argument>
+										<argument>${project.basedir}/scripts/emudhra-blocked.sha256</argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -122,6 +132,7 @@
 								</goals>
 								<configuration>
 									<executable>jpackage</executable>
+									<longModulepath>false</longModulepath>
 									<arguments>
 										<argument>--type</argument>
 										<argument>app-image</argument>
@@ -138,11 +149,22 @@
 										<argument>--module-path</argument>
 										<argument>${javafx.jmods.path}</argument>
 										<argument>--add-modules</argument>
-										<argument>
-											java.base,javafx.controls,javafx.web,javafx.graphics,javafx.media,java.datatransfer,java.desktop,java.scripting,java.xml,jdk.jsobject,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom,javafx.fxml,java.naming,java.sql,jdk.charsets
-										</argument>
+										<argument>java.base,javafx.controls,javafx.web,javafx.graphics,javafx.media,java.datatransfer,java.desktop,java.scripting,java.xml,jdk.jsobject,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom,javafx.fxml,java.naming,java.sql,jdk.charsets</argument>
 										<argument>--icon</argument>
 										<argument>${project.basedir}/src/main/resources/heavybreathing.ico</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>secure-generated-runtime</id>
+								<phase>verify</phase>
+								<goals><goal>exec</goal></goals>
+								<configuration>
+									<executable>${java.home}/bin/java</executable>
+									<arguments>
+										<argument>${project.basedir}/scripts/PatchRuntimeTrust.java</argument>
+										<argument>${project.build.directory}/exe/${project.artifactId}-${project.version}</argument>
+										<argument>${project.basedir}/scripts/emudhra-blocked.sha256</argument>
 									</arguments>
 								</configuration>
 							</execution>
