@@ -17,7 +17,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<mainClass>be.algielen.randompicture.gui.Main</mainClass>
-		<javafx.version>25.0.2</javafx.version>
+		<javafx.version>25.0.5</javafx.version>
 		<javafx.platform>win</javafx.platform>
 		<javafx.jmods.path>C:/development/resources/javafx-jmods-25.0.2</javafx.jmods.path>
 	</properties>
